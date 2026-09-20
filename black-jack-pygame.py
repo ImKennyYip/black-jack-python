@@ -9,6 +9,9 @@ CARD_WIDTH = 110
 CARD_HEIGHT = 154
 CARD_SPACING = 5
 
+VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+SUITS = ["C", "D", "H", "S"]
+
 class Card:
     def __init__(self, value, suit):
         self.value = value
@@ -16,7 +19,7 @@ class Card:
         self.image = pygame.image.load(f"cards/{value}-{suit}.png")
         self.image = pygame.transform.smoothscale(self.image, (CARD_WIDTH, CARD_HEIGHT))
 
-    def __str__(self):
+    def __repr__(self):
         return f"{self.value}-{self.suit}"
 
     def get_value(self):
@@ -51,22 +54,18 @@ class Player:
 
         return total
 
-def build_deck():
-    values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
-    suits = ["C", "D", "H", "S"]
-    return [Card(value, suit) for suit in suits for value in values]
-
 def start_game():
     global deck, dealer, player, hidden_card, game_over, message
 
-    deck = build_deck()
+    game_over = False
+    message = ""
+
+    deck = [Card(value, suit) for suit in SUITS for value in VALUES]
     random.shuffle(deck)
+    # print(deck)
 
     dealer = Player()
     player = Player()
-
-    game_over = False
-    message = ""
 
     hidden_card = deck.pop()
     dealer.add_card(hidden_card)
@@ -75,24 +74,51 @@ def start_game():
     for i in range(2):
         player.add_card(deck.pop())
 
-dealer = Player()
-player = Player()
+    # print(player.hand)
+    # print(player.get_total())
+
 deck = []
+dealer = None
+player = None
 hidden_card = None
 game_over = False
 message = ""
 
 start_game()
 
-
 pygame.init()
 window = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
 pygame.display.set_caption("Black Jack")
 clock = pygame.time.Clock()
 
-font = pygame.font.SysFont("Arial", 30)
 back_image = pygame.image.load("cards/BACK.png")
 back_image = pygame.transform.smoothscale(back_image, (CARD_WIDTH, CARD_HEIGHT))
+font = pygame.font.SysFont("Arial", 30)
+
+def draw():
+    window.fill((53, 101, 77))
+
+    if game_over:
+        window.blit(hidden_card.image, (20, 20))
+    else:
+        window.blit(back_image, (20, 20))
+
+    for i in range(1, len(dealer.hand)):
+        card = dealer.hand[i]
+        x = 20 + (CARD_WIDTH + CARD_SPACING) + (CARD_WIDTH + CARD_SPACING) * (i - 1)
+        window.blit(card.image, (x, 20))
+
+    for i in range(len(player.hand)):
+        card = player.hand[i]
+        x = 20 + (CARD_WIDTH + CARD_SPACING) * i
+        window.blit(card.image, (x, 320))
+
+    controls = font.render("H = Hit   S = Stay   R = Restart", True, "white")
+    window.blit(controls, (80, 560))
+
+    if game_over:
+        result_text = font.render(message, True, "white")
+        window.blit(result_text, (220, 250))
 
 def hit():
     if game_over:
@@ -102,7 +128,6 @@ def hit():
 
     if player.get_total() > 21:
         stay()
-
 
 def stay():
     global game_over, message
@@ -126,32 +151,6 @@ def stay():
         message = "You Lose!"
 
     game_over = True
-
-
-def draw():
-    window.fill((53, 101, 77))
-
-    if game_over:
-        window.blit(hidden_card.image, (20, 20))
-    else:
-        window.blit(back_image, (20, 20))
-
-    for i in range(1, len(dealer.hand)):
-        card = dealer.hand[i]
-        x = CARD_WIDTH + 25 + (CARD_WIDTH + CARD_SPACING) * (i - 1)
-        window.blit(card.image, (x, 20))
-
-    for i in range(len(player.hand)):
-        card = player.hand[i]
-        x = 20 + (CARD_WIDTH + CARD_SPACING) * i
-        window.blit(card.image, (x, 320))
-
-    controls = font.render("H = Hit   S = Stay   R = Restart", True, "white")
-    window.blit(controls, (80, 560))
-
-    if game_over:
-        result_text = font.render(message, True, "white")
-        window.blit(result_text, (220, 250))
 
 while True:
     for event in pygame.event.get():
