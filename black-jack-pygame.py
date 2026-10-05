@@ -71,8 +71,8 @@ def start_game():
     dealer.add_card(hidden_card)
     dealer.add_card(deck.pop())
 
-    for i in range(2):
-        player.add_card(deck.pop())
+    player.add_card(deck.pop())
+    player.add_card(deck.pop())
 
     # print(player.hand)
     # print(player.get_total())
